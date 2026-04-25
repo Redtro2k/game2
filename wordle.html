@@ -1,0 +1,455 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wordle: Love Edition</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff7d7;
+      color: #2f2418;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 16% 15%, rgba(255, 218, 102, 0.58), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(255, 156, 184, 0.3), transparent 30%),
+        radial-gradient(circle at 50% 92%, rgba(255, 235, 153, 0.48), transparent 34%),
+        linear-gradient(135deg, #fffdf1 0%, #fff2c2 52%, #ffe9ef 100%);
+    }
+
+    main {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: #7a4b16;
+      font-size: clamp(2rem, 7vw, 4rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: #6b5338;
+      line-height: 1.5;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    a,
+    button {
+      min-height: 44px;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 0 16px;
+      display: inline-grid;
+      place-items: center;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      background: #fffdf5;
+      color: #7a4b16;
+      cursor: pointer;
+    }
+
+    button {
+      background: #ffd84d;
+      color: #2f2418;
+    }
+
+    button:hover,
+    a:hover {
+      background: #fff1b8;
+    }
+
+    button:disabled,
+    input:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .stat {
+      min-width: 96px;
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      background: rgba(255, 253, 243, 0.95);
+      padding: 10px 12px;
+      box-shadow: 4px 4px 0 #7a4b16;
+    }
+
+    .stat span {
+      display: block;
+      color: #8a6841;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.35rem;
+    }
+
+    .panel {
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      background: rgba(255, 253, 243, 0.94);
+      padding: 22px;
+      box-shadow: 8px 8px 0 #7a4b16;
+    }
+
+    .board {
+      display: grid;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(var(--letters), minmax(34px, 54px));
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      border: 2px solid #7a4b16;
+      border-radius: 7px;
+      display: grid;
+      place-items: center;
+      background: #fffdf5;
+      color: #7a4b16;
+      font-size: clamp(1.2rem, 5vw, 1.8rem);
+      font-weight: 900;
+      text-transform: uppercase;
+      box-shadow: 3px 3px 0 #7a4b16;
+    }
+
+    .cell.correct {
+      background: #ffd84d;
+    }
+
+    .cell.present {
+      background: #ffcfdf;
+    }
+
+    .cell.missing {
+      background: #eadfca;
+      color: #6b5338;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      color: #6a3c16;
+      font-weight: 700;
+    }
+
+    .guess-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    input {
+      min-height: 48px;
+      width: 100%;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font: inherit;
+      text-transform: uppercase;
+      background: #ffffff;
+      color: #2f2418;
+    }
+
+    #message {
+      min-height: 56px;
+      margin-top: 14px;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 13px 14px;
+      background: #fff1b8;
+      color: #6a3c16;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .stats {
+        justify-content: stretch;
+      }
+
+      .stat {
+        flex: 1;
+      }
+
+      .panel {
+        padding: 18px;
+        box-shadow: 5px 5px 0 #7a4b16;
+      }
+
+      .guess-row {
+        grid-template-columns: 1fr;
+      }
+
+      .row {
+        gap: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Stage 4: Wordle Love Edition</h1>
+        <p>Guess each sweet word. Yellow means correct spot, pink means the letter belongs somewhere else.</p>
+      </div>
+      <div class="stats" aria-label="Game stats">
+        <div class="stat">
+          <span>Word</span>
+          <strong id="round">1/5</strong>
+        </div>
+        <div class="stat">
+          <span>Tries</span>
+          <strong id="tries">0/6</strong>
+        </div>
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="Game navigation">
+      <a href="index.html">Number Game</a>
+      <a href="minesweeper.html">Previous Stage</a>
+    </nav>
+
+    <section class="panel">
+      <div class="board" id="board" aria-label="Wordle board"></div>
+
+      <form id="guess-form">
+        <label for="guess" id="guess-label">Enter a 5-letter love word</label>
+        <div class="guess-row">
+          <input id="guess" name="guess" type="text" autocomplete="off" required autofocus>
+          <button id="submit" type="submit">Guess</button>
+        </div>
+      </form>
+
+      <div class="actions">
+        <button id="restart" type="button">Restart</button>
+      </div>
+
+      <div id="message" role="status" aria-live="polite">Start with the first sweet word.</div>
+    </section>
+  </main>
+
+  <script>
+    const answers = ["SMILE", "HEART", "FOREVER", "TRUST", "KILIG"];
+    const maxTries = 6;
+
+    const board = document.querySelector("#board");
+    const form = document.querySelector("#guess-form");
+    const guessInput = document.querySelector("#guess");
+    const submitButton = document.querySelector("#submit");
+    const restartButton = document.querySelector("#restart");
+    const message = document.querySelector("#message");
+    const roundDisplay = document.querySelector("#round");
+    const triesDisplay = document.querySelector("#tries");
+    const guessLabel = document.querySelector("#guess-label");
+
+    let currentRound = 0;
+    let tries = 0;
+    let solvedWords = 0;
+
+    function currentAnswer() {
+      return answers[currentRound];
+    }
+
+    function setupBoard() {
+      const answer = currentAnswer();
+      board.innerHTML = "";
+      board.style.setProperty("--letters", answer.length);
+
+      for (let rowIndex = 0; rowIndex < maxTries; rowIndex += 1) {
+        const row = document.createElement("div");
+        row.className = "row";
+
+        for (let cellIndex = 0; cellIndex < answer.length; cellIndex += 1) {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+          row.appendChild(cell);
+        }
+
+        board.appendChild(row);
+      }
+    }
+
+    function updateStats() {
+      roundDisplay.textContent = `${currentRound + 1}/${answers.length}`;
+      triesDisplay.textContent = `${tries}/${maxTries}`;
+      guessLabel.textContent = `Enter a ${currentAnswer().length}-letter love word`;
+      guessInput.maxLength = currentAnswer().length;
+    }
+
+    function scoreGuess(guess, answer) {
+      const answerLetters = answer.split("");
+      const result = Array(answer.length).fill("missing");
+
+      guess.split("").forEach((letter, index) => {
+        if (letter === answer[index]) {
+          result[index] = "correct";
+          answerLetters[index] = null;
+        }
+      });
+
+      guess.split("").forEach((letter, index) => {
+        if (result[index] === "correct") {
+          return;
+        }
+
+        const foundIndex = answerLetters.indexOf(letter);
+
+        if (foundIndex !== -1) {
+          result[index] = "present";
+          answerLetters[foundIndex] = null;
+        }
+      });
+
+      return result;
+    }
+
+    function showGuess(guess, result) {
+      const row = board.children[tries];
+
+      guess.split("").forEach((letter, index) => {
+        const cell = row.children[index];
+        cell.textContent = letter;
+        cell.classList.add(result[index]);
+      });
+    }
+
+    function nextWord() {
+      currentRound += 1;
+      tries = 0;
+
+      if (currentRound === answers.length) {
+        board.innerHTML = "";
+        guessInput.disabled = true;
+        submitButton.disabled = true;
+        roundDisplay.textContent = `${answers.length}/${answers.length}`;
+        triesDisplay.textContent = "-";
+        if (solvedWords === answers.length) {
+          message.textContent = "You guessed the words, but the real answer is always you.";
+        } else {
+          message.textContent = "Game finished. Restart and solve every word to unlock the final message.";
+        }
+        return;
+      }
+
+      setupBoard();
+      updateStats();
+      guessInput.value = "";
+      guessInput.focus();
+      message.textContent = "Next sweet word unlocked.";
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const answer = currentAnswer();
+      const guess = guessInput.value.trim().toUpperCase();
+
+      if (!/^[A-Z]+$/.test(guess) || guess.length !== answer.length) {
+        message.textContent = `Please enter exactly ${answer.length} letters.`;
+        guessInput.focus();
+        return;
+      }
+
+      const result = scoreGuess(guess, answer);
+      showGuess(guess, result);
+      tries += 1;
+      updateStats();
+      guessInput.value = "";
+
+      if (guess === answer) {
+        solvedWords += 1;
+        message.textContent = `${answer} solved. Sweet.`;
+        setTimeout(nextWord, 900);
+        return;
+      }
+
+      if (tries === maxTries) {
+        message.textContent = `The word was ${answer}. Moving to the next one.`;
+        setTimeout(nextWord, 1200);
+        return;
+      }
+
+      message.textContent = "Keep guessing.";
+      guessInput.focus();
+    });
+
+    function restartGame() {
+      currentRound = 0;
+      tries = 0;
+      solvedWords = 0;
+      guessInput.disabled = false;
+      submitButton.disabled = false;
+      setupBoard();
+      updateStats();
+      guessInput.value = "";
+      message.textContent = "Start with the first sweet word.";
+      guessInput.focus();
+    }
+
+    restartButton.addEventListener("click", restartGame);
+    restartGame();
+  </script>
+</body>
+</html>

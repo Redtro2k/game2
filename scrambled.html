@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scrambled Love Words</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff7d7;
+      color: #2f2418;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 24px;
+      background:
+        radial-gradient(circle at 14% 16%, rgba(255, 218, 102, 0.58), transparent 28%),
+        radial-gradient(circle at 86% 12%, rgba(255, 156, 184, 0.3), transparent 30%),
+        radial-gradient(circle at 52% 92%, rgba(255, 235, 153, 0.48), transparent 34%),
+        linear-gradient(135deg, #fffdf1 0%, #fff2c2 52%, #ffe9ef 100%);
+    }
+
+    main {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: #7a4b16;
+      font-size: clamp(2rem, 7vw, 4rem);
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    p {
+      margin: 0;
+      color: #6b5338;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .stat {
+      min-width: 92px;
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      background: rgba(255, 253, 243, 0.95);
+      padding: 10px 12px;
+      box-shadow: 4px 4px 0 #7a4b16;
+    }
+
+    .stat span {
+      display: block;
+      color: #8a6841;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.35rem;
+    }
+
+    .panel {
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      background: rgba(255, 253, 243, 0.94);
+      padding: 24px;
+      box-shadow: 8px 8px 0 #7a4b16;
+    }
+
+    .nav {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    a,
+    button {
+      min-height: 44px;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 0 16px;
+      display: inline-grid;
+      place-items: center;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      background: #fffdf5;
+      color: #7a4b16;
+      cursor: pointer;
+    }
+
+    button {
+      background: #ffd84d;
+      color: #2f2418;
+    }
+
+    button:hover {
+      background: #ffe27a;
+    }
+
+    a:hover {
+      background: #fff1b8;
+    }
+
+    #next-stage:not([hidden]) {
+      display: inline-grid;
+      margin-top: 14px;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.62;
+    }
+
+    .scramble {
+      min-height: 128px;
+      margin: 18px 0;
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 244, 188, 0.92)),
+        #ffffff;
+      color: #b45a72;
+      font-size: clamp(2rem, 8vw, 4.7rem);
+      font-weight: 900;
+      line-height: 1.1;
+      text-align: center;
+      overflow-wrap: anywhere;
+      padding: 18px;
+    }
+
+    form {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      font-weight: 700;
+      color: #6a3c16;
+    }
+
+    .answer-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+    }
+
+    input {
+      min-height: 48px;
+      width: 100%;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 10px 12px;
+      font: inherit;
+      background: #ffffff;
+      color: #2f2418;
+    }
+
+    #message,
+    #hint {
+      min-height: 46px;
+      margin-top: 14px;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 12px 14px;
+      background: #fff1b8;
+      color: #6a3c16;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    #hint {
+      background: #fffdf5;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    @media (max-width: 640px) {
+      header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .stats {
+        justify-content: stretch;
+      }
+
+      .stat {
+        flex: 1;
+      }
+
+      .panel {
+        padding: 20px;
+        box-shadow: 5px 5px 0 #7a4b16;
+      }
+
+      .answer-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Stage 2: Scrambled Love Words</h1>
+        <p>Unscramble sweet love words. Hints are here when you need them.</p>
+      </div>
+      <div class="stats" aria-label="Game stats">
+        <div class="stat">
+          <span>Level</span>
+          <strong id="level">Easy</strong>
+        </div>
+        <div class="stat">
+          <span>Score</span>
+          <strong id="score">0</strong>
+        </div>
+        <div class="stat">
+          <span>Mistakes</span>
+          <strong id="mistakes">0</strong>
+        </div>
+        <div class="stat">
+          <span>Helps</span>
+          <strong id="hints-left">OK</strong>
+        </div>
+      </div>
+    </header>
+
+    <div class="nav">
+      <a href="index.html">Number Game</a>
+      <a href="matching.html">Matching Cards</a>
+    </div>
+
+    <section class="panel">
+      <div class="scramble" id="scrambled-word" aria-live="polite"></div>
+
+      <form id="answer-form">
+        <label for="answer">Your answer</label>
+        <div class="answer-row">
+          <input id="answer" name="answer" type="text" autocomplete="off" required autofocus>
+          <button id="submit" type="submit">Submit</button>
+        </div>
+      </form>
+
+      <div class="actions">
+        <button id="hint-button" type="button">Use Hint</button>
+        <button id="skip-button" type="button">Skip Word</button>
+        <button id="restart-button" type="button">Restart</button>
+      </div>
+
+      <div id="message" role="status" aria-live="polite">Solve the first word.</div>
+      <div id="hint">Hint appears here.</div>
+      <a id="next-stage" href="minesweeper.html" hidden>Next Stage: Love Minesweeper</a>
+    </section>
+  </main>
+
+  <script>
+    const words = [
+      { answer: "love", level: "Easy", hint: "The main feeling of the game." },
+      { answer: "kiss", level: "Easy", hint: "A sweet touch with lips." },
+      { answer: "hug", level: "Easy", hint: "Holding someone close." },
+      { answer: "date", level: "Easy", hint: "A special time together." },
+      { answer: "heart", level: "Easy", hint: "The symbol of love." },
+      { answer: "smile", level: "Easy", hint: "What you do when happy." },
+      { answer: "sweet", level: "Normal", hint: "Kind, cute, and caring." },
+      { answer: "crush", level: "Normal", hint: "Someone you really like." },
+      { answer: "trust", level: "Normal", hint: "Believing in someone." },
+      { answer: "promise", level: "Normal", hint: "Something you say you will keep." },
+      { answer: "forever", level: "Normal", hint: "A love that keeps going." },
+      { answer: "darling", level: "Normal", hint: "A sweet name for someone loved." },
+      { answer: "devotion", level: "Difficult", hint: "A loyal and deep kind of love." },
+      { answer: "affection", level: "Difficult", hint: "A warm feeling you show gently." },
+      { answer: "tenderness", level: "Difficult", hint: "Soft and careful love." },
+      { answer: "sweetheart", level: "Difficult", hint: "A loving name for someone special." },
+      { answer: "admiration", level: "Difficult", hint: "Love mixed with respect." },
+      { answer: "soulmate", level: "Difficult", hint: "A person who feels meant for you." }
+    ];
+
+    const scrambledWord = document.querySelector("#scrambled-word");
+    const answerForm = document.querySelector("#answer-form");
+    const answerInput = document.querySelector("#answer");
+    const levelDisplay = document.querySelector("#level");
+    const scoreDisplay = document.querySelector("#score");
+    const mistakesDisplay = document.querySelector("#mistakes");
+    const hintsLeftDisplay = document.querySelector("#hints-left");
+    const message = document.querySelector("#message");
+    const hint = document.querySelector("#hint");
+    const hintButton = document.querySelector("#hint-button");
+    const skipButton = document.querySelector("#skip-button");
+    const restartButton = document.querySelector("#restart-button");
+    const nextStage = document.querySelector("#next-stage");
+
+    let deck = [];
+    let currentWord = null;
+    let score = 0;
+    let mistakes = 0;
+    let hintsUsed = 0;
+
+    function shuffle(items) {
+      const shuffled = [...items];
+
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+
+      return shuffled;
+    }
+
+    function scrambleWord(word) {
+      let scrambled = word;
+
+      while (scrambled === word) {
+        scrambled = shuffle(word.split("")).join("");
+      }
+
+      return scrambled.toUpperCase();
+    }
+
+    function updateStats() {
+      scoreDisplay.textContent = score;
+      mistakesDisplay.textContent = mistakes;
+      hintsLeftDisplay.textContent = hintsUsed;
+      levelDisplay.textContent = currentWord ? currentWord.level : "-";
+      hintButton.disabled = !currentWord;
+    }
+
+    function showNextWord() {
+      if (deck.length === 0) {
+        currentWord = null;
+        scrambledWord.textContent = "DONE";
+        answerInput.disabled = true;
+        document.querySelector("#submit").disabled = true;
+        hintButton.disabled = true;
+        skipButton.disabled = true;
+        message.textContent = `Finished. Final score: ${score}. Mistakes: ${mistakes}.`;
+        hint.textContent = "All words solved or skipped.";
+        nextStage.hidden = false;
+        return;
+      }
+
+      currentWord = deck.pop();
+      scrambledWord.textContent = scrambleWord(currentWord.answer);
+      answerInput.value = "";
+      answerInput.disabled = false;
+      document.querySelector("#submit").disabled = false;
+      skipButton.disabled = false;
+      message.textContent = `${currentWord.level} word. Unscramble this sweet word.`;
+      hint.textContent = "Hint appears here.";
+      updateStats();
+      answerInput.focus();
+    }
+
+    function normalizeAnswer(value) {
+      return value.trim().toLowerCase().replace(/\s+/g, "");
+    }
+
+    answerForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      if (!currentWord) {
+        return;
+      }
+
+      if (normalizeAnswer(answerInput.value) === currentWord.answer) {
+        score += 1;
+        message.textContent = "Correct. Beautifully solved.";
+        updateStats();
+        setTimeout(showNextWord, 650);
+      } else {
+        mistakes += 1;
+        answerInput.value = "";
+        message.textContent = "Not quite. Try again.";
+        updateStats();
+        answerInput.focus();
+      }
+    });
+
+    hintButton.addEventListener("click", () => {
+      if (!currentWord) {
+        return;
+      }
+
+      hintsUsed += 1;
+      hint.textContent = `${currentWord.hint} First letter: ${currentWord.answer[0].toUpperCase()}.`;
+      updateStats();
+    });
+
+    skipButton.addEventListener("click", () => {
+      if (!currentWord) {
+        return;
+      }
+
+      mistakes += 1;
+      message.textContent = `Skipped. The word was ${currentWord.answer.toUpperCase()}.`;
+      updateStats();
+      setTimeout(showNextWord, 900);
+    });
+
+    function startGame() {
+      deck = shuffle(words);
+      score = 0;
+      mistakes = 0;
+      hintsUsed = 0;
+      nextStage.hidden = true;
+      updateStats();
+      showNextWord();
+    }
+
+    restartButton.addEventListener("click", startGame);
+    startGame();
+  </script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Matching Cards</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #fff7d7;
+      color: #2f2418;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      padding: 22px;
+      background:
+        radial-gradient(circle at 12% 18%, rgba(255, 218, 102, 0.55), transparent 26%),
+        radial-gradient(circle at 90% 12%, rgba(255, 156, 184, 0.28), transparent 29%),
+        radial-gradient(circle at 42% 92%, rgba(255, 235, 153, 0.45), transparent 34%),
+        linear-gradient(135deg, #fffdf1 0%, #fff2c2 52%, #ffe9ef 100%);
+    }
+
+    main {
+      width: min(100%, 980px);
+      margin: 0 auto;
+    }
+
+    header {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2.1rem, 7vw, 4rem);
+      line-height: 1;
+      letter-spacing: 0;
+      color: #7a4b16;
+    }
+
+    p {
+      max-width: 620px;
+      margin: 0;
+      color: #6b5338;
+      line-height: 1.45;
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .stat {
+      min-width: 96px;
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      background: rgba(255, 253, 243, 0.95);
+      padding: 10px 12px;
+      box-shadow: 4px 4px 0 #7a4b16;
+    }
+
+    .stat span {
+      display: block;
+      color: #8a6841;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 1.4rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    a,
+    button {
+      min-height: 44px;
+      border: 2px solid #7a4b16;
+      border-radius: 6px;
+      padding: 0 16px;
+      display: inline-grid;
+      place-items: center;
+      font: inherit;
+      font-weight: 700;
+      text-decoration: none;
+      background: #fffdf5;
+      color: #7a4b16;
+      cursor: pointer;
+    }
+
+    button {
+      background: #ffd84d;
+    }
+
+    button:hover {
+      background: #ffe27a;
+    }
+
+    a:hover {
+      background: #fff1b8;
+    }
+
+    #next-stage:not([hidden]) {
+      display: inline-grid;
+      margin-bottom: 18px;
+    }
+
+    #message {
+      min-height: 44px;
+      display: grid;
+      align-items: center;
+      color: #6a3c16;
+      font-weight: 700;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(92px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1.18;
+      min-height: 0;
+      border: 0;
+      border-radius: 8px;
+      padding: 0;
+      background: transparent;
+      perspective: 900px;
+      box-shadow: none;
+    }
+
+    .card:hover {
+      background: transparent;
+    }
+
+    .card-inner {
+      position: absolute;
+      inset: 0;
+      border: 2px solid #7a4b16;
+      border-radius: 8px;
+      background: #fffdf5;
+      box-shadow: 5px 5px 0 #7a4b16;
+      transform-style: preserve-3d;
+      transition: transform 220ms ease;
+    }
+
+    .card.is-flipped .card-inner,
+    .card.is-matched .card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      border-radius: 6px;
+      overflow: hidden;
+      backface-visibility: hidden;
+    }
+
+    .card-back {
+      background:
+        radial-gradient(circle at 50% 35%, rgba(255, 138, 170, 0.55) 0 16%, transparent 17%),
+        linear-gradient(45deg, rgba(122, 75, 22, 0.1) 25%, transparent 25% 50%, rgba(122, 75, 22, 0.1) 50% 75%, transparent 75%),
+        #ffd84d;
+      background-size: 100% 100%, 28px 28px, auto;
+      color: #7a4b16;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      font-weight: 900;
+    }
+
+    .card-front {
+      transform: rotateY(180deg);
+      background: #fffdf5;
+    }
+
+    .card-front img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card.is-matched .card-inner {
+      box-shadow: 0 0 0 4px #ff8aaa, 5px 5px 0 #7a4b16;
+    }
+
+    @media (max-width: 760px) {
+      header,
+      .toolbar {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .stats {
+        justify-content: stretch;
+      }
+
+      .stat {
+        flex: 1;
+      }
+
+      .board {
+        grid-template-columns: repeat(3, minmax(80px, 1fr));
+      }
+    }
+
+    @media (max-width: 420px) {
+      body {
+        padding: 16px;
+      }
+
+      .board {
+        gap: 9px;
+      }
+
+      .card-inner {
+        box-shadow: 3px 3px 0 #7a4b16;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>Stage 1: Matching Cards</h1>
+        <p>Flip two cards at a time and find every matching image pair.</p>
+      </div>
+      <div class="stats" aria-label="Game stats">
+        <div class="stat">
+          <span>Moves</span>
+          <strong id="moves">0</strong>
+        </div>
+        <div class="stat">
+          <span>Matches</span>
+          <strong id="matches">0</strong>
+        </div>
+      </div>
+    </header>
+
+    <div class="toolbar">
+      <a href="index.html">Number Game</a>
+      <button id="restart" type="button">Shuffle Cards</button>
+    </div>
+
+    <div id="message" role="status" aria-live="polite">Find the first pair.</div>
+    <a id="next-stage" href="scrambled.html" hidden>Next Stage: Scrambled Love Words</a>
+    <section class="board" id="board" aria-label="Matching card board"></section>
+  </main>
+
+  <script>
+    const imagePaths = [
+      "images/t1.jpg",
+      "images/t2.jpg",
+      "images/t3.jpg",
+      "images/t4.jpg",
+      "images/t5.jpg",
+      "images/t6.jpg",
+      "images/t7.jpg",
+      "images/t8.jpg",
+      "images/t8.png"
+    ];
+
+    const board = document.querySelector("#board");
+    const movesDisplay = document.querySelector("#moves");
+    const matchesDisplay = document.querySelector("#matches");
+    const message = document.querySelector("#message");
+    const restartButton = document.querySelector("#restart");
+    const nextStage = document.querySelector("#next-stage");
+
+    let cards = [];
+    let flippedCards = [];
+    let lockBoard = false;
+    let moves = 0;
+    let matches = 0;
+
+    function shuffle(items) {
+      const shuffled = [...items];
+
+      for (let index = shuffled.length - 1; index > 0; index -= 1) {
+        const randomIndex = Math.floor(Math.random() * (index + 1));
+        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
+      }
+
+      return shuffled;
+    }
+
+    function createDeck() {
+      return shuffle(imagePaths.flatMap((path, index) => [
+        { id: `${index}-a`, pairId: index, path },
+        { id: `${index}-b`, pairId: index, path }
+      ]));
+    }
+
+    function renderBoard() {
+      board.innerHTML = "";
+
+      cards.forEach((card) => {
+        const button = document.createElement("button");
+        button.className = "card";
+        button.type = "button";
+        button.dataset.id = card.id;
+        button.setAttribute("aria-label", "Hidden card");
+
+        button.innerHTML = `
+          <span class="card-inner">
+            <span class="card-face card-back">&hearts;</span>
+            <span class="card-face card-front">
+              <img src="${card.path}" alt="">
+            </span>
+          </span>
+        `;
+
+        button.addEventListener("click", () => flipCard(button, card));
+        board.appendChild(button);
+      });
+    }
+
+    function updateStats() {
+      movesDisplay.textContent = moves;
+      matchesDisplay.textContent = matches;
+    }
+
+    function flipCard(button, card) {
+      if (lockBoard || button.classList.contains("is-flipped") || button.classList.contains("is-matched")) {
+        return;
+      }
+
+      button.classList.add("is-flipped");
+      button.setAttribute("aria-label", "Revealed card");
+      flippedCards.push({ button, card });
+
+      if (flippedCards.length === 2) {
+        moves += 1;
+        updateStats();
+        checkPair();
+      }
+    }
+
+    function checkPair() {
+      const [first, second] = flippedCards;
+
+      if (first.card.pairId === second.card.pairId) {
+        first.button.classList.add("is-matched");
+        second.button.classList.add("is-matched");
+        first.button.disabled = true;
+        second.button.disabled = true;
+        matches += 1;
+        flippedCards = [];
+        updateStats();
+
+        if (matches === imagePaths.length) {
+          message.textContent = `You matched all cards in ${moves} moves.`;
+          nextStage.hidden = false;
+        } else {
+          message.textContent = "Nice match. Keep going.";
+        }
+
+        return;
+      }
+
+      lockBoard = true;
+      message.textContent = "Not a match.";
+
+      setTimeout(() => {
+        first.button.classList.remove("is-flipped");
+        second.button.classList.remove("is-flipped");
+        first.button.setAttribute("aria-label", "Hidden card");
+        second.button.setAttribute("aria-label", "Hidden card");
+        flippedCards = [];
+        lockBoard = false;
+        message.textContent = "Try another pair.";
+      }, 850);
+    }
+
+    function startGame() {
+      cards = createDeck();
+      flippedCards = [];
+      lockBoard = false;
+      moves = 0;
+      matches = 0;
+      nextStage.hidden = true;
+      updateStats();
+      message.textContent = "Find the first pair.";
+      renderBoard();
+    }
+
+    restartButton.addEventListener("click", startGame);
+    startGame();
+  </script>
+</body>
+</html>
